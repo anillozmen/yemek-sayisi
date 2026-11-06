@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Yemek Sayısı</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Yemek Sayısı">
+<meta name="theme-color" content="#0e4d4a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="ikon.png">
+<style>
+:root{
+  --bg:#f3f7f6;--kart:#ffffff;--fg:#1c2b2a;--soluk:#6b7c7a;--cizgi:#d5e0dd;
+  --petrol:#0e4d4a;--yesil:#2f9e7a;--acik:#e3f1ec;--giris:#f7faf9;--uyari:#b4541f;
+  --font:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0f1716;--kart:#172221;--fg:#e4eeec;--soluk:#93a5a2;--cizgi:#2a3a38;
+  --petrol:#7fd1bd;--yesil:#3fbf95;--acik:#1d3330;--giris:#111b1a;--uyari:#f0a070;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+.sar{max-width:560px;margin:0 auto;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:110px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:14px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+header small{display:block;font-size:11px;letter-spacing:.12em;font-weight:700;color:var(--soluk)}
+header h1{margin:2px 0 0;font-size:22px;color:var(--petrol)}
+.tarih{display:flex;gap:8px;align-items:center}
+.tarih input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--cizgi);border-radius:10px;background:var(--kart);color:var(--fg)}
+button{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--cizgi);background:var(--kart);color:var(--fg);padding:10px 12px;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--yesil);outline-offset:2px}
+.kucuk{font-size:13px;padding:6px 10px}
+.top{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.top div{background:var(--acik);border-top:3px solid var(--yesil);border-radius:8px;padding:8px 2px;text-align:center}
+.top span{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--petrol)}
+.top b{font-size:22px;color:var(--petrol);font-variant-numeric:tabular-nums}
+.tablo{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;overflow:hidden}
+.bas,.sat{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,48px);gap:4px;align-items:center;padding:6px 8px}
+.bas{font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--soluk);text-align:center;border-bottom:1px solid var(--cizgi)}
+.bas span:first-child{text-align:left}
+.sat:nth-child(even){background:var(--giris)}
+.sat label{font-size:14px;font-weight:600;overflow-wrap:anywhere;line-height:1.2}
+.sat.dolu label{color:var(--petrol)}
+.sat input{width:100%;font:inherit;font-size:16px;text-align:center;padding:8px 0;border:1px solid var(--cizgi);border-radius:8px;background:var(--kart);color:var(--fg);font-variant-numeric:tabular-nums}
+.durum{font-size:12px;color:var(--soluk);min-height:1.2em}
+.durum.hata{color:var(--uyari)}
+.panel{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.panel textarea{width:100%;min-height:260px;font:inherit;font-size:16px;padding:8px;border:1px solid var(--cizgi);border-radius:8px;background:var(--giris);color:var(--fg)}
+.panel p{margin:0;font-size:13px;color:var(--soluk)}
+.panel .sira{display:flex;gap:8px}
+.gecmis h2{font-size:13px;letter-spacing:.06em;color:var(--soluk);margin:6px 0}
+.gecmis ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.gecmis li button{width:100%;display:flex;justify-content:space-between;gap:8px;font-weight:500;font-size:14px;text-align:left;padding:8px 10px}
+.gecmis li span:last-child{color:var(--soluk);font-variant-numeric:tabular-nums}
+.cubuk{position:fixed;left:0;right:0;bottom:0;background:var(--kart);border-top:1px solid var(--cizgi);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;gap:8px;justify-content:center}
+.cubuk button{flex:1;max-width:260px}
+.cubuk .ana{background:var(--petrol);border-color:var(--petrol);color:var(--bg)}
+/* PDF kalıbı: programdaki "Günlük Yemek Sayısı" PDF'iyle aynı (108x192 mm) */
+#pdf{position:fixed;left:-10000px;top:0;width:108mm;height:192mm;background:#fff;color:#1c2b2a;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden}
+#pdf .ust{background:#0e4d4a;color:#fff;padding:8mm 7mm 7mm}
+#pdf .ust small{display:block;font-size:3.2mm;letter-spacing:.6mm;opacity:.8;font-weight:600}
+#pdf .ust h1{margin:1.5mm 0 2.5mm;font-size:7.2mm;font-weight:800;line-height:1.1;color:#fff}
+#pdf .ust p{margin:0;font-size:3.9mm;opacity:.95}
+#pdf .kart{margin:-4mm 7mm 4mm;display:grid;grid-template-columns:repeat(4,1fr);gap:1.5mm}
+#pdf .kart div{background:#e3f1ec;border-top:1.2mm solid #2f9e7a;border-radius:2mm;padding:2mm 1mm;text-align:center}
+#pdf .kart span{display:block;font-size:2.6mm;font-weight:700;letter-spacing:.3mm;color:#0e4d4a}
+#pdf .kart b{font-size:6.5mm;color:#0e4d4a;line-height:1.1}
+#pdf .pb,#pdf .ps{display:grid;grid-template-columns:1fr repeat(4,12.5mm);align-items:center;column-gap:1mm}
+#pdf .pb{margin:0 7mm;padding:0 2mm 1.5mm 3mm;font-size:2.5mm;color:#6b7c7a;letter-spacing:.2mm;border-bottom:.3mm solid #c9d6d3;text-align:center}
+#pdf .pb span:first-child{text-align:left}
+#pdf .l{margin:0 7mm}
+#pdf .ps{padding:0 2mm 0 3mm;font-weight:600}
+#pdf .ps span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pdf .ps:nth-child(even){background:#f2f6f5}
+#pdf .ps b{text-align:center;color:#0e4d4a}
+#pdf .alt{position:absolute;left:7mm;right:7mm;bottom:5mm;font-size:2.6mm;color:#8a9998;display:flex;justify-content:space-between;border-top:.3mm solid #dfe7e5;padding-top:1.5mm}
+</style>
+</head>
+<body>
+<div class="sar">
+  <header><div><small>ÖZYEĞİN ÜNİVERSİTESİ · YURT 7</small><h1>Günlük Yemek Sayısı</h1></div>
+    <button type="button" class="kucuk" id="ekipBtn">Ekipler</button></header>
+  <section class="panel" id="ekipPanel" hidden>
+    <p>Her satıra bir ekip. Sıra PDF'teki sıradır. Ekip silmek girilmiş eski günleri silmez.</p>
+    <textarea id="ekipYazi" aria-label="Ekip listesi"></textarea>
+    <div class="sira"><button type="button" class="kucuk" id="ekipKaydet">Kaydet</button><button type="button" class="kucuk" id="ekipVazgec">Vazgeç</button></div>
+  </section>
+  <div class="tarih">
+    <button type="button" id="geri" aria-label="Önceki gün">‹</button>
+    <input type="date" id="tarih" aria-label="Tarih">
+    <button type="button" id="ileri" aria-label="Sonraki gün">›</button>
+  </div>
+  <div class="top" id="top"></div>
+  <div class="tablo">
+    <div class="bas"><span>FİRMA / EKİP</span><span>SABAH</span><span>ÖĞLE</span><span>AKŞAM</span><span>KUMANYA</span></div>
+    <div id="liste"></div>
+  </div>
+  <div class="durum" id="durum"></div>
+  <section class="gecmis" id="gecmisK" hidden><h2>GİRİLEN GÜNLER</h2><ul id="gecmis"></ul></section>
+</div>
+<div class="cubuk"><button type="button" id="temizle">Günü temizle</button><button type="button" class="ana" id="pdfBtn">PDF</button></div>
+<div id="pdf" aria-hidden="true"></div>
+
+<script src="html2canvas.min.js"></script>
+<script src="jspdf.umd.min.js"></script>
+<script>
+// Tamamen telefonda çalışır; veri yalnız bu telefonda (localStorage). İnternet gerekmez (sw.js önbellek).
+const VARSAYILAN=["Ofis","Önsöz","Mekanik - Adeha","Ahmet Akbey","Elektrik - Lares","Abdüllatif Karayol","Ömer Özsubaşı","Selami Bulgan","Hakan Han Beton","Ziya Ağaç","Emre Yeniad İskele","Cephe - Assel Cephe","Bet10 İzolasyon","Ance Alüminyum","Karot","Şap Ekibi","İSG Personel"];
+const OG=["sabah","ogle","aksam","kumanya"], OGAD={sabah:"SABAH",ogle:"ÖĞLE",aksam:"AKŞAM",kumanya:"KUMANYA"};
+const AY=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+const GUN=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,"0");
+const yerel=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function oku(k,v){try{const x=localStorage.getItem(k);return x?JSON.parse(x):v}catch(e){return v}}
+function yaz(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){durum("Telefona kaydedilemedi (gizli sekme olabilir).",true);return false}}
+
+let EKIPLER=oku("ekipler",VARSAYILAN), gunler=oku("gunler",{}), tarih=yerel(new Date()), veri={};
+function durum(t,hata){const e=$("#durum");e.textContent=t;e.className="durum"+(hata?" hata":"")}
+
+function yukle(){
+  const g=gunler[tarih]||{}; veri={};
+  EKIPLER.forEach(e=>veri[e]={sabah:0,ogle:0,aksam:0,kumanya:0,...(g[e]||{})});
+  // listede olmayan ama o gün girilmiş ekip varsa kaybolmasın, sona eklenir
+  Object.keys(g).forEach(e=>{if(!veri[e])veri[e]={...g[e]}});
+  $("#tarih").value=tarih; ciz(); gecmisCiz();
+  durum(gunler[tarih]?"Bu güne girilmiş sayılar.":"Boş gün. Rakamları yaz, telefona kendisi kaydeder.");
+}
+const adlar=()=>Object.keys(veri);
+function ciz(){
+  $("#liste").innerHTML=adlar().map((e,i)=>`<div class="sat${OG.some(o=>veri[e][o])?" dolu":""}" data-e="${i}"><label for="i${i}_0">${esc(e)}</label>`+
+    OG.map((o,j)=>`<input id="i${i}_${j}" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" aria-label="${esc(e)} ${OGAD[o]}" data-o="${o}" value="${veri[e][o]||""}">`).join("")+"</div>").join("");
+  toplam();
+}
+function toplam(){
+  const t={};OG.forEach(o=>t[o]=adlar().reduce((s,e)=>s+(veri[e][o]||0),0));
+  $("#top").innerHTML=OG.map(o=>`<div><span>${OGAD[o]}</span><b>${t[o]}</b></div>`).join("");
+  return t;
+}
+function kaydet(){
+  const dolu={}; adlar().forEach(e=>{if(OG.some(o=>veri[e][o]))dolu[e]={...veri[e]}});
+  if(Object.keys(dolu).length)gunler[tarih]=dolu; else delete gunler[tarih];
+  if(yaz("gunler",gunler))durum("Kaydedildi · "+new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"}));
+  gecmisCiz();
+}
+$("#liste").addEventListener("input",ev=>{
+  const inp=ev.target, sat=inp.closest(".sat"); if(!sat)return;
+  inp.value=inp.value.replace(/\D/g,"");
+  const e=adlar()[+sat.dataset.e]; veri[e][inp.dataset.o]=+inp.value||0;
+  sat.classList.toggle("dolu",OG.some(o=>veri[e][o]));
+  toplam(); kaydet();
+});
+$("#liste").addEventListener("keydown",ev=>{
+  if(ev.key!=="Enter")return; ev.preventDefault();
+  const k=[...document.querySelectorAll(".sat input")], i=k.indexOf(ev.target); if(k[i+1])k[i+1].focus(); else ev.target.blur();
+});
+function git(k){const d=new Date(tarih+"T12:00");d.setDate(d.getDate()+k);tarih=yerel(d);yukle()}
+$("#geri").onclick=()=>git(-1); $("#ileri").onclick=()=>git(1);
+$("#tarih").onchange=e=>{if(e.target.value){tarih=e.target.value;yukle()}};
+let temizOnay=false;
+$("#temizle").onclick=()=>{
+  const b=$("#temizle");
+  if(!temizOnay){temizOnay=true;b.textContent="Emin misin? Tekrar bas";setTimeout(()=>{temizOnay=false;b.textContent="Günü temizle"},3000);return}
+  temizOnay=false;b.textContent="Günü temizle";delete gunler[tarih];yaz("gunler",gunler);yukle();durum("Gün temizlendi.");
+};
+
+function gecmisCiz(){
+  const l=Object.keys(gunler).sort().reverse().slice(0,21);
+  $("#gecmisK").hidden=!l.length;
+  $("#gecmis").innerHTML=l.map(t=>{const d=new Date(t+"T12:00"), g=gunler[t];
+    const s=OG.map(o=>Object.values(g).reduce((a,r)=>a+(r[o]||0),0)).join(" / ");
+    return `<li><button type="button" data-t="${t}"><span>${d.getDate()} ${AY[d.getMonth()]} ${GUN[d.getDay()]}</span><span>${s}</span></button></li>`}).join("");
+}
+$("#gecmis").addEventListener("click",ev=>{const b=ev.target.closest("button");if(b){tarih=b.dataset.t;yukle();scrollTo({top:0,behavior:"smooth"})}});
+
+$("#ekipBtn").onclick=()=>{$("#ekipYazi").value=EKIPLER.join("\n");$("#ekipPanel").hidden=!$("#ekipPanel").hidden};
+$("#ekipVazgec").onclick=()=>$("#ekipPanel").hidden=true;
+$("#ekipKaydet").onclick=()=>{
+  const l=[...new Set($("#ekipYazi").value.split("\n").map(s=>s.trim()).filter(Boolean))];
+  if(!l.length){durum("Ekip listesi boş olamaz.",true);return}
+  EKIPLER=l; yaz("ekipler",EKIPLER); $("#ekipPanel").hidden=true; yukle(); durum("Ekip listesi kaydedildi.");
+};
+
+function pdfHtml(){
+  const lst=adlar().filter(e=>OG.some(o=>veri[e][o])).map(e=>({ekip:e,...veri[e]})), t=toplam(), d=new Date(tarih+"T12:00");
+  const sat=Math.max(5,Math.min(9.6,92/Math.max(lst.length,1))), fs=(4.2*Math.min(1,sat/9)).toFixed(2);
+  const hc=n=>n?String(n):"–";
+  const sats=lst.map(x=>`<div class="ps" style="height:${sat.toFixed(1)}mm;font-size:${fs}mm"><span>${esc(x.ekip)}</span>`+OG.map(o=>`<b style="font-size:${fs}mm">${hc(x[o])}</b>`).join("")+"</div>").join("")
+    ||`<div class="ps" style="height:${sat}mm;font-size:${fs}mm"><span>Bu güne yemek girilmemiş</span></div>`;
+  return {n:lst.length, html:`<div class="ust"><small>ÖZYEĞİN ÜNİVERSİTESİ · YURT 7</small><h1>Günlük Yemek Sayısı</h1><p>${d.getDate()} ${AY[d.getMonth()]} ${d.getFullYear()} ${GUN[d.getDay()]}</p></div>
+<div class="kart">${OG.map(o=>`<div><span>${OGAD[o]}</span><b>${t[o]}</b></div>`).join("")}</div>
+<div class="pb"><span>FİRMA / EKİP</span><span>SABAH</span><span>ÖĞLE</span><span>AKŞAM</span><span>KUMANYA</span></div><div class="l">${sats}</div>
+<div class="alt"><span>Yemek puantajından</span><span>${lst.length} ekip</span></div>`};
+}
+async function pdfYap(){
+  const el=$("#pdf"); el.innerHTML=pdfHtml().html;
+  const c=await html2canvas(el,{scale:3,backgroundColor:"#ffffff"});
+  const pdf=new jspdf.jsPDF({unit:"mm",format:[108,192],orientation:"portrait"});
+  pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",0,0,108,192);
+  const d=new Date(tarih+"T12:00");
+  return {blob:pdf.output("blob"), ad:`Günlük Yemek Sayısı - ${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}.pdf`};
+}
+$("#pdfBtn").onclick=async()=>{
+  const btn=$("#pdfBtn"); btn.disabled=true; btn.textContent="Hazırlanıyor…";
+  try{
+    const {blob,ad}=await pdfYap(), f=new File([blob],ad,{type:"application/pdf"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){
+      try{await navigator.share({files:[f],title:ad});durum("PDF paylaşıldı: "+ad)}
+      catch(e){if(e.name!=="AbortError")throw e;durum("Paylaşım kapatıldı.")}
+    }else{
+      const u=URL.createObjectURL(blob), a=document.createElement("a");
+      a.href=u;a.download=ad;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);
+      durum("PDF indirildi: "+ad);
+    }
+  }catch(e){durum("PDF oluşturulamadı: "+(e&&e.message||e),true)}
+  finally{btn.disabled=false;btn.textContent="PDF"}
+};
+
+yukle();
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
