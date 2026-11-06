@@ -225,7 +225,12 @@ $("#pdfBtn").onclick=async()=>{
 };
 
 yukle();
-if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator&&location.protocol==="https:"){
+  // Yeni sürüm gelince sayfayı bir kez yenile, güncelleme hemen görünsün
+  const ilk=!!navigator.serviceWorker.controller; let yenilendi=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(ilk&&!yenilendi){yenilendi=true;location.reload()}});
+  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});
+}
 </script>
 </body>
 </html>
