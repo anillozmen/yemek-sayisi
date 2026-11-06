@@ -110,7 +110,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 <script src="jspdf.umd.min.js"></script>
 <script>
 // Tamamen telefonda çalışır; veri yalnız bu telefonda (localStorage). İnternet gerekmez (sw.js önbellek).
-const VARSAYILAN=["Ofis","Önsöz","Mekanik - Adeha","Ahmet Akbey","Elektrik - Lares","Abdüllatif Karayol","Ömer Özsubaşı","Selami Bulgan","Hakan Han Beton","Ziya Ağaç","Emre Yeniad İskele","Cephe - Assel Cephe","Bet10 İzolasyon","Ance Alüminyum","Karot","Şap Ekibi","İSG Personel"];
+const VARSAYILAN=["Ofis","Önsöz","Mekanik - Adeha","Ahmet Akbey","Elektrik - Lares","Abdüllatif Karayol","Ömer Özsubaşı","Selami Bulgan","Hakan Han Beton","Ziya Ağaç","Emre Yeniad İskele","Cephe - Assel","Bet10 İzolasyon","Ance Alüminyum","Karot","Şap Ekibi","İSG Personel"];
 const OG=["sabah","ogle","aksam","kumanya"], OGAD={sabah:"SABAH",ogle:"ÖĞLE",aksam:"AKŞAM",kumanya:"KUMANYA"};
 const AY=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
 const GUN=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
@@ -122,6 +122,11 @@ function oku(k,v){try{const x=localStorage.getItem(k);return x?JSON.parse(x):v}c
 function yaz(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){durum("Telefona kaydedilemedi (gizli sekme olabilir).",true);return false}}
 
 let EKIPLER=oku("ekipler",VARSAYILAN), gunler=oku("gunler",{}), tarih=yerel(new Date()), veri={};
+// Ekip adı değişiklikleri: telefonda kayıtlı liste ve günler de yeni ada geçer (2026-11-06)
+const ADDEGIS={"Cephe - Assel Cephe":"Cephe - Assel"};
+(()=>{let d=false;EKIPLER=EKIPLER.map(e=>ADDEGIS[e]?(d=true,ADDEGIS[e]):e);
+  Object.values(gunler).forEach(g=>Object.keys(ADDEGIS).forEach(e=>{if(g[e]){g[ADDEGIS[e]]=g[e];delete g[e];d=true}}));
+  if(d){yaz("ekipler",EKIPLER);yaz("gunler",gunler)}})();
 function durum(t,hata){const e=$("#durum");e.textContent=t;e.className="durum"+(hata?" hata":"")}
 
 function yukle(){

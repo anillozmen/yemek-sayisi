@@ -1,5 +1,5 @@
 // Sinem'in rutin uygulamasındaki düzen (2026-11-06): önce ağ, güncelleme anında gelir; ağ yoksa önbellek (internetsiz çalışır).
-const C="yemek-v3";
+const C="yemek-v4";
 const DOSYALAR=["./","index.html","manifest.json","ikon.png","html2canvas.min.js","jspdf.umd.min.js"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(C).then(c=>c.addAll(DOSYALAR)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
