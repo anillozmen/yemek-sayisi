@@ -39,11 +39,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .top span{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--petrol)}
 .top b{font-size:22px;color:var(--petrol);font-variant-numeric:tabular-nums}
 .tablo{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;overflow:hidden}
-.bas,.sat{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,48px);gap:4px;align-items:center;padding:6px 8px}
+.bas,.sat{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,44px);gap:4px;align-items:center;padding:6px 8px}
 .bas{font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--soluk);text-align:center;border-bottom:1px solid var(--cizgi)}
 .bas span:first-child{text-align:left}
 .sat:nth-child(even){background:var(--giris)}
-.sat label{font-size:14px;font-weight:600;overflow-wrap:anywhere;line-height:1.2}
+.sat label{font-size:14px;font-weight:600;overflow-wrap:break-word;hyphens:none;line-height:1.2}
 .sat.dolu label{color:var(--petrol)}
 .sat input{width:100%;font:inherit;font-size:16px;text-align:center;padding:8px 0;border:1px solid var(--cizgi);border-radius:8px;background:var(--kart);color:var(--fg);font-variant-numeric:tabular-nums}
 .durum{font-size:12px;color:var(--soluk);min-height:1.2em}
@@ -75,7 +75,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 #pdf .pb span:first-child{text-align:left}
 #pdf .l{margin:0 7mm}
 #pdf .ps{padding:0 2mm 0 3mm;font-weight:600}
-#pdf .ps span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pdf .ps span{white-space:nowrap;overflow:hidden}
 #pdf .ps:nth-child(even){background:#f2f6f5}
 #pdf .ps b{text-align:center;color:#0e4d4a}
 #pdf .alt{position:absolute;left:7mm;right:7mm;bottom:5mm;font-size:2.6mm;color:#8a9998;display:flex;justify-content:space-between;border-top:.3mm solid #dfe7e5;padding-top:1.5mm}
@@ -200,6 +200,8 @@ function pdfHtml(){
 }
 async function pdfYap(){
   const el=$("#pdf"); el.innerHTML=pdfHtml().html;
+  // uzun ekip adı sığmazsa yazıyı küçült (kesme yok)
+  el.querySelectorAll(".ps span").forEach(sp=>{let f=parseFloat(getComputedStyle(sp).fontSize);while(sp.scrollWidth>sp.clientWidth&&f>6){f-=.5;sp.style.fontSize=f+"px"}});
   const c=await html2canvas(el,{scale:3,backgroundColor:"#ffffff"});
   const pdf=new jspdf.jsPDF({unit:"mm",format:[108,192],orientation:"portrait"});
   pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",0,0,108,192);
