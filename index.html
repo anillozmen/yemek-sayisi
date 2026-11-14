@@ -96,6 +96,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
     <button type="button" id="ileri" aria-label="Sonraki gün">›</button>
   </div>
   <div class="top" id="top"></div>
+  <div class="durum">Toplam = Önsöz (Adeha ve Lares sayılmaz)</div>
   <div class="tablo">
     <div class="bas"><span>FİRMA / EKİP</span><span>SABAH</span><span>ÖĞLE</span><span>AKŞAM</span><span>KUMANYA</span></div>
     <div id="liste"></div>
@@ -138,13 +139,16 @@ function yukle(){
   durum(gunler[tarih]?"Bu güne girilmiş sayılar.":"Boş gün. Rakamları yaz, telefona kendisi kaydeder.");
 }
 const adlar=()=>Object.keys(veri);
+// Programdaki Günlük Yemek Sayısı kuralı (2026-11-13, telefona 2026-11-14): ADEHA ve LARES sayılmaz, tabloda çıkmaz;
+// diğer bütün ekipler tek satırda ÖNSÖZ olarak toplanır. Ekip ekip giriş aynen durur.
+const HARIC=e=>/ADEHA|LARES/.test(String(e).toLocaleUpperCase("tr"));
 function ciz(){
   $("#liste").innerHTML=adlar().map((e,i)=>`<div class="sat${OG.some(o=>veri[e][o])?" dolu":""}" data-e="${i}"><label for="i${i}_0">${esc(e)}</label>`+
     OG.map((o,j)=>`<input id="i${i}_${j}" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" aria-label="${esc(e)} ${OGAD[o]}" data-o="${o}" value="${veri[e][o]||""}">`).join("")+"</div>").join("");
   toplam();
 }
 function toplam(){
-  const t={};OG.forEach(o=>t[o]=adlar().reduce((s,e)=>s+(veri[e][o]||0),0));
+  const t={};OG.forEach(o=>t[o]=adlar().filter(e=>!HARIC(e)).reduce((s,e)=>s+(veri[e][o]||0),0));
   $("#top").innerHTML=OG.map(o=>`<div><span>${OGAD[o]}</span><b>${t[o]}</b></div>`).join("");
   return t;
 }
@@ -179,7 +183,7 @@ function gecmisCiz(){
   const l=Object.keys(gunler).sort().reverse().slice(0,21);
   $("#gecmisK").hidden=!l.length;
   $("#gecmis").innerHTML=l.map(t=>{const d=new Date(t+"T12:00"), g=gunler[t];
-    const s=OG.map(o=>Object.values(g).reduce((a,r)=>a+(r[o]||0),0)).join(" / ");
+    const s=OG.map(o=>Object.entries(g).filter(([e])=>!HARIC(e)).reduce((a,[,r])=>a+(r[o]||0),0)).join(" / ");
     return `<li><button type="button" data-t="${t}"><span>${d.getDate()} ${AY[d.getMonth()]} ${GUN[d.getDay()]}</span><span>${s}</span></button></li>`}).join("");
 }
 $("#gecmis").addEventListener("click",ev=>{const b=ev.target.closest("button");if(b){tarih=b.dataset.t;yukle();scrollTo({top:0,behavior:"smooth"})}});
@@ -193,7 +197,7 @@ $("#ekipKaydet").onclick=()=>{
 };
 
 function pdfHtml(){
-  const lst=adlar().filter(e=>OG.some(o=>veri[e][o])).map(e=>({ekip:e,...veri[e]})), t=toplam(), d=new Date(tarih+"T12:00");
+  const t=toplam(), lst=OG.some(o=>t[o])?[{ekip:"ÖNSÖZ",...t}]:[], d=new Date(tarih+"T12:00");
   const sat=Math.max(5,Math.min(9.6,92/Math.max(lst.length,1))), fs=(4.2*Math.min(1,sat/9)).toFixed(2);
   const hc=n=>n?String(n):"–";
   const sats=lst.map(x=>`<div class="ps" style="height:${sat.toFixed(1)}mm;font-size:${fs}mm"><span>${esc(x.ekip)}</span>`+OG.map(o=>`<b style="font-size:${fs}mm">${hc(x[o])}</b>`).join("")+"</div>").join("")
@@ -201,7 +205,7 @@ function pdfHtml(){
   return {n:lst.length, html:`<div class="ust"><small>ÖZYEĞİN ÜNİVERSİTESİ · YURT 7</small><h1>Günlük Yemek Sayısı</h1><p>${d.getDate()} ${AY[d.getMonth()]} ${d.getFullYear()} ${GUN[d.getDay()]}</p></div>
 <div class="kart">${OG.map(o=>`<div><span>${OGAD[o]}</span><b>${t[o]}</b></div>`).join("")}</div>
 <div class="pb"><span>FİRMA / EKİP</span><span>SABAH</span><span>ÖĞLE</span><span>AKŞAM</span><span>KUMANYA</span></div><div class="l">${sats}</div>
-<div class="alt"><span>Yemek puantajından</span><span>${lst.length} ekip</span></div>`};
+<div class="alt"><span>Yemek puantajından</span></div>`};
 }
 async function pdfYap(){
   const el=$("#pdf"); el.innerHTML=pdfHtml().html;
